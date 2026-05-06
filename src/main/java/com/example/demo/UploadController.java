@@ -8,15 +8,17 @@ import org.springframework.web.multipart.MultipartFile;
 public class UploadController {
 
     @Autowired
-    private AIService aiService;
     private PrescriptionRepository repo;
+
+     @Autowired
+    private AIService aiService;
 
    @PostMapping("/upload")
 public String uploadFile(@RequestParam("file") MultipartFile file) {
 
     try {
 
-        // ❗ Error Handling 1: Empty file
+        //  Error Handling 1: Empty file
         if (file.isEmpty()) {
             return "Please retake the image clearly!";
         }
@@ -24,16 +26,17 @@ public String uploadFile(@RequestParam("file") MultipartFile file) {
         byte[] bytes = file.getBytes();
         String hash = ImageHashUtil.generateHash(bytes);
 
-        // 🔍 DB check
+        //  DB check
         var existing = repo.findByHash(hash);
         if (existing.isPresent()) {
             return "From DB: " + existing.get().getResult();
         }
 
-        // 🤖 AI call (or dummy)
-        String result = aiService.callAI("exercise recommendation");
+        //  AI call (or dummy)
+        //String result = aiService.callAI("exercise recommendation");
+        String result = "Recommended Exercise Video";
 
-        // 💾 Save to DB
+        //  Save to DB
         Prescription p = new Prescription();
         p.setHash(hash);
         p.setResult(result);
@@ -42,8 +45,8 @@ public String uploadFile(@RequestParam("file") MultipartFile file) {
         return "New Result: " + result;
 
     } catch (Exception e) {
-
-        // ❗ Error Handling 2: AI or processing failure
-        return "Unable to process image. Please try again.";
-    }
+    e.printStackTrace();   // 👈 ADD THIS
+    return "Error: " + e.getMessage();
+}
+}
 }
